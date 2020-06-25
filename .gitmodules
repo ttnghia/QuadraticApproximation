@@ -1,0 +1,18 @@
+[submodule "Externals/imgui"]
+	path = Externals/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "Externals/ImGuizmo"]
+	path = Externals/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "Externals/magnum"]
+	path = Externals/magnum
+	url = https://github.com/mosra/magnum.git
+[submodule "Externals/corrade"]
+	path = Externals/corrade
+	url = https://github.com/mosra/corrade.git
+[submodule "Externals/magnum-integration"]
+	path = Externals/magnum-integration
+	url = https://github.com/mosra/magnum-integration.git
+[submodule "Externals/glfw"]
+	path = Externals/glfw
+	url = https://github.com/glfw/glfw.git
