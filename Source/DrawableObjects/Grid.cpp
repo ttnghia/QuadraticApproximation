@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
+#include "DrawableObjects/Grid.h"
+
 #include <Magnum/MeshTools/Compile.h>
 #include <Magnum/Trade/MeshData.h>
 #include <Magnum/SceneGraph/Scene.h>
 #include <Magnum/Primitives/Grid.h>
-
-#include "DrawableObjects/Grid.h"
 
 /****************************************************************************************************/
 Grid::Grid(Scene3D* const                     scene,

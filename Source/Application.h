@@ -15,18 +15,22 @@
  */
 
 #pragma once
-#include "DrawableObjects/Curves/Curve.h"
+
+#include "Application/PickableApplication.h"
+#include "QuadraticCurveApproximation.h"
 
 /****************************************************************************************************/
-class CubicBezierCurve : public Curve {
+class Application : public PickableApplication {
 public:
-    explicit CubicBezierCurve(Scene3D* const scene,
-                              int            subdivision           = 128,
-                              const Color3&  color                 = Color3(1.0f),
-                              float          thickness             = 1.0f,
-                              bool           renderControlPoints   = true,
-                              bool           editableControlPoints = true,
-                              float          controlPointRadius    = 0.05f);
+    explicit Application(const Arguments& arguments);
+
 protected:
-    virtual void computeLines() override;
+    void drawEvent() override;
+    void showMenu();
+
+    /* Quadratic approximation object */
+    Containers::Pointer<QuadraticCurveApproximation> m_Curves { nullptr };
 };
+
+/****************************************************************************************************/
+MAGNUM_APPLICATION_MAIN(Application)

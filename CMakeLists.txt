@@ -48,6 +48,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/Externals/magnum-integration EXCLUDE_FROM
 include_directories(${PROJECT_SOURCE_DIR}/Externals/ImGuizmo)
 include_directories(${PROJECT_SOURCE_DIR}/Source)
 
+find_package(Corrade REQUIRED Main)
 find_package(Magnum REQUIRED
     GlfwApplication
     GL
@@ -61,12 +62,13 @@ find_package(MagnumIntegration REQUIRED ImGui)
 file(GLOB_RECURSE H_FILES ${PROJECT_SOURCE_DIR}/Source/*.h)
 file(GLOB_RECURSE CPP_FILES ${PROJECT_SOURCE_DIR}/Source/*.cpp)
 
-add_executable(${PROJECT_NAME}
+add_executable(${PROJECT_NAME} WIN32
     ${PROJECT_SOURCE_DIR}/Externals/ImGuizmo/ImGuizmo.cpp
     ${H_FILES}
     ${CPP_FILES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+    Corrade::Main
     Magnum::Application
     Magnum::GL
     Magnum::Magnum

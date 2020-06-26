@@ -16,15 +16,14 @@
 
 #pragma once
 
-#include <Corrade/Containers/Pointer.h>
+#include "Shaders/LineShader.h"
 
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/Math/Color.h>
 #include <Magnum/SceneGraph/Camera.h>
 #include <Magnum/Shaders/Phong.h>
-
-#include "Shaders/LineShader.h"
+#include <Magnum/SceneGraph/Drawable.h>
 
 #include <vector>
 
@@ -38,7 +37,7 @@ class Curve {
 public:
     using Point          = Vector3;
     using VPoints        = std::vector<Vector3>;
-    using DrawablePoints = std::vector<Containers::Pointer<PickableObject>>;
+    using DrawablePoints = std::vector<PickableObject*>;
 
     explicit Curve(Scene3D* const scene,
                    int            subdivision           = 128,
@@ -50,11 +49,9 @@ public:
     virtual ~Curve();
 
     /* Operations */
-    Curve& drawCurve(SceneGraph::Camera3D& camera, const Vector2i& viewport);
-    Curve& drawControlPoints(SceneGraph::Camera3D& camera);
+    Curve& draw(SceneGraph::Camera3D& camera, const Vector2i& viewport);
     Curve& recomputeCurve();
     Curve& setControlPoints(const VPoints& points);
-    Curve& updateDrawableControlPoints();
 
     /* General curve data */
     int& subdivision() { return m_Subdivision; }
@@ -87,11 +84,11 @@ protected:
     LineShader m_LineShader;
 
     /* Scene variable for rendering control points */
-    Scene3D* m_Scene;
-    Containers::Pointer<SceneGraph::DrawableGroup3D> m_DrawableGroup;
-    Containers::Pointer<Shaders::Phong>              m_SphereShader;
-    GL::Mesh       m_MeshSphere{ NoCreate };
-    DrawablePoints m_DrawableControlPoints;
+    Scene3D* const              m_Scene;
+    SceneGraph::DrawableGroup3D m_Drawables;
+    Shaders::Phong              m_SphereShader{ Shaders::Phong::Flag::ObjectId };
+    GL::Mesh                    m_MeshSphere{ NoCreate };
+    DrawablePoints              m_DrawablePoints;
 
     VPoints m_ControlPoints;
     bool    m_bRenderControlPoints { true };

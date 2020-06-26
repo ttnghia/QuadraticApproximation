@@ -16,9 +16,8 @@
 
 #pragma once
 
-#include <Magnum/ImGuiIntegration/Context.hpp>
-
 #include "Application/GLApplication.h"
+#include <Magnum/ImGuiIntegration/Context.hpp>
 
 /****************************************************************************************************/
 class ImGuiApplication : public GLApplication {

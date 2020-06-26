@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
+#include "Application/GLApplication.h"
+
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/Renderer.h>
 #include <Magnum/GL/Context.h>
 #include <Magnum/GL/Version.h>
-
-#include "Application/GLApplication.h"
 
 /****************************************************************************************************/
 GLApplication::GLApplication(const std::string& title, const Arguments& arguments,

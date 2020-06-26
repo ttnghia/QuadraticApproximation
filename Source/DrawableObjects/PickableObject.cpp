@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
+#include "DrawableObjects/PickableObject.h"
+
 #include <Magnum/SceneGraph/Camera.h>
 #include <Magnum/SceneGraph/Scene.h>
 #include <Magnum/GL/Mesh.h>
-
-#include "DrawableObjects/PickableObject.h"
 
 /****************************************************************************************************/
 PickableObject::PickableObject(Shaders::Phong& shader, const Color3& color,

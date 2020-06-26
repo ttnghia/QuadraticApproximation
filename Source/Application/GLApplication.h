@@ -16,8 +16,10 @@
 
 #pragma once
 
-#include <Corrade/Containers/Pointer.h>
+#include "Camera/ArcBallCamera.h"
+#include "DrawableObjects/Grid.h"
 
+#include <Corrade/Containers/Pointer.h>
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Color.h>
 #include <Magnum/Math/Vector3.h>
@@ -25,9 +27,6 @@
 #include <Magnum/SceneGraph/MatrixTransformation3D.h>
 #include <Magnum/SceneGraph/Scene.h>
 #include <Magnum/SceneGraph/Drawable.h>
-
-#include "Camera/ArcBallCamera.h"
-#include "DrawableObjects/Grid.h"
 
 /****************************************************************************************************/
 using namespace Corrade;

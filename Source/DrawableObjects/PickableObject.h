@@ -22,8 +22,6 @@
 #include <Magnum/Math/Color.h>
 #include <Magnum/Shaders/Phong.h>
 
-#include <Magnum/Shaders/Phong.h>
-
 using namespace Corrade;
 using namespace Magnum;
 using Object3D = SceneGraph::Object<SceneGraph::MatrixTransformation3D>;

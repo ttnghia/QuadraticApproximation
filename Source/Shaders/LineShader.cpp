@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
+#include "LineShader.h"
+
 #include <Corrade/Containers/Reference.h>
 #include <Magnum/GL/Shader.h>
 #include <Magnum/GL/Version.h>
 #include <Magnum/Math/Color.h>
 #include <Magnum/Math/Matrix4.h>
-
-#include "LineShader.h"
 
 /****************************************************************************************************/
 LineShader::LineShader() {

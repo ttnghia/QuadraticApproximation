@@ -17,10 +17,10 @@
 #include <Magnum/GL/DefaultFramebuffer.h>
 
 #include "DrawableObjects/PickableObject.h"
-#include "QuadraticApproximationApp.h"
+#include "Application.h"
 
 /****************************************************************************************************/
-QuadraticApproximationApp::QuadraticApproximationApp(const Arguments& arguments) :
+Application::Application(const Arguments& arguments) :
     PickableApplication{"Quadratic Approximation of Cubic Curves", arguments} {
     m_DefaultCamPosition = Vector3(0, 1.0, 5);
     m_DefaultCamTarget   = Vector3(0, 0.75, 0);
@@ -31,7 +31,7 @@ QuadraticApproximationApp::QuadraticApproximationApp(const Arguments& arguments)
 }
 
 /****************************************************************************************************/
-void QuadraticApproximationApp::drawEvent() {
+void Application::drawEvent() {
     GL::defaultFramebuffer.clear(GL::FramebufferClear::Color | GL::FramebufferClear::Depth);
     ImGuiApplication::beginFrame();
 
@@ -82,10 +82,12 @@ void QuadraticApproximationApp::drawEvent() {
 
                 /* Update the corresponding node's point */
                 Vector3 translation = objMat[3].xyz();
-                m_Curves->setControlPoint(selectedPoint->idx(), translation);
+                m_Curves->setDataPoint(selectedPoint->idx(), translation);
 
                 /* Update all control points and curves */
-                m_Curves->convertControlPoints();
+                m_Curves->saveControlPoints();
+                m_Curves->computeBezierControlPoints();
+                m_Curves->updatePolylines();
                 m_Curves->updateCurveControlPoints();
                 m_Curves->computeCurves();
             }
@@ -99,10 +101,15 @@ void QuadraticApproximationApp::drawEvent() {
 }
 
 /****************************************************************************************************/
-void QuadraticApproximationApp::showMenu() {
+void Application::showMenu() {
     if(ImGui::CollapsingHeader("Tessellation and quadratic approximation", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::PushID("Subdivision+Approximation");
         if(ImGui::SliderInt("Segments", &m_Curves->subdivision(), 1, 128)) {
+            m_Curves->computeCurves();
+        }
+        if(ImGui::Checkbox("Bezier from Catmull-Rom", &m_Curves->BezierFromCatmullRom())) {
+            m_Curves->computeBezierControlPoints();
+            m_Curves->generateCurves();
             m_Curves->computeCurves();
         }
         if(ImGui::Checkbox("Render quadratic Bezier", &m_Curves->quadC1BezierConfig.bEnabled)) {

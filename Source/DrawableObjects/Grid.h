@@ -16,13 +16,12 @@
 
 #pragma once
 
-#include <Corrade/Containers/Pointer.h>
+#include "DrawableObjects/FlatShadeObject.h"
 
+#include <Corrade/Containers/Pointer.h>
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/Shaders/Flat.h>
 #include <Magnum/SceneGraph/MatrixTransformation3D.h>
-
-#include "DrawableObjects/FlatShadeObject.h"
 
 /****************************************************************************************************/
 using namespace Corrade;
