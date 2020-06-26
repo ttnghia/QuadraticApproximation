@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
+#include "Application/PickableApplication.h"
+#include "DrawableObjects/PickableObject.h"
+
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/PixelFormat.h>
 #include <Magnum/Image.h>
-
-#include "Application/PickableApplication.h"
-#include "DrawableObjects/PickableObject.h"
 
 #include <ImGuizmo.h>
 

@@ -16,13 +16,13 @@
 
 #pragma once
 
+#include "Application/ImGuiApplication.h"
+
 #include <Magnum/Magnum.h>
 #include <Magnum/PixelFormat.h>
 #include <Magnum/GL/Framebuffer.h>
 #include <Magnum/GL/Renderbuffer.h>
 #include <Magnum/GL/RenderbufferFormat.h>
-
-#include "Application/ImGuiApplication.h"
 
 #include <unordered_map>
 

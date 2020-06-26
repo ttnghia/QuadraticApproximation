@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-#include <Magnum/GL/Renderer.h>
-
 #include "Application/ImGuiApplication.h"
+#include <Magnum/GL/Renderer.h>
 
 /****************************************************************************************************/
 ImGuiApplication::ImGuiApplication(const std::string& title, const Arguments& arguments,

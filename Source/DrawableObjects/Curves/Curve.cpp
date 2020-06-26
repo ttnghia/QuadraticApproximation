@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-#include "DrawableObjects/Curves/QuadraticBezierCurve.h"
+#include "DrawableObjects/Curves/Curve.h"
 #include "DrawableObjects/PickableObject.h"
 
 #include <Corrade/Utility/Assert.h>
 #include <Corrade/Containers/ArrayView.h>
-#include <Magnum/GL/Renderer.h>
 #include <Magnum/MeshTools/Compile.h>
-#include <Magnum/Primitives/UVSphere.h>
+#include <Magnum/Primitives/Icosphere.h>
 #include <Magnum/Trade/MeshData.h>
-
-using namespace Corrade;
-using namespace Magnum;
 
 /****************************************************************************************************/
 Curve::Curve(Scene3D* const scene,
@@ -48,9 +44,7 @@ Curve::Curve(Scene3D* const scene,
     m_MeshLines.addVertexBuffer(m_BufferLines, 0, Shaders::Generic3D::Position{});
 
     /* Setup point rendering variables */
-    m_MeshSphere = MeshTools::compile(Primitives::uvSphereSolid(8, 16));
-    m_SphereShader.emplace(Shaders::Phong::Flag::ObjectId);
-    m_DrawableGroup.emplace();
+    m_MeshSphere = MeshTools::compile(Primitives::icosphereSolid(3));
 }
 
 /****************************************************************************************************/
@@ -68,25 +62,22 @@ Curve& Curve::recomputeCurve() {
 /****************************************************************************************************/
 Curve& Curve::setControlPoints(const Curve::VPoints& points) {
     m_ControlPoints = points;
-    if(m_DrawableControlPoints.size() > points.size()) {
-        m_DrawableControlPoints.resize(points.size());
-    }
-    for(size_t i = 0; i < m_DrawableControlPoints.size(); ++i) {
-        m_DrawableControlPoints[i]->setTransformation(Matrix4::translation(m_ControlPoints[i]) *
-                                                      Matrix4::scaling(Vector3(m_ControlPointRadius)));
+    size_t oldSize = m_DrawablePoints.size();
+    m_DrawablePoints.resize(points.size());
+
+    for(size_t i = oldSize; i < points.size(); ++i) {
+        auto& newPoint = m_DrawablePoints[i];
+        newPoint = new PickableObject(m_SphereShader,
+                                      m_Color,
+                                      m_MeshSphere,
+                                      m_Scene,
+                                      &m_Drawables);
+        newPoint->setSelectable(m_bEditableControlPoints);
     }
 
-    for(size_t i = m_DrawableControlPoints.size(); i < points.size(); ++i) {
-        m_DrawableControlPoints.resize(m_DrawableControlPoints.size() + 1);
-        auto& newPoint = m_DrawableControlPoints.back();
-        newPoint.emplace(*m_SphereShader,
-                         m_Color,
-                         m_MeshSphere,
-                         m_Scene,
-                         m_DrawableGroup.get());
-        newPoint->setTransformation(Matrix4::translation(m_ControlPoints[i]) *
-                                    Matrix4::scaling(Vector3(m_ControlPointRadius)));
-        newPoint->setSelectable(m_bEditableControlPoints);
+    for(size_t i = 0; i < m_DrawablePoints.size(); ++i) {
+        m_DrawablePoints[i]->setTransformation(Matrix4::translation(m_ControlPoints[i]) *
+                                               Matrix4::scaling(Vector3(m_ControlPointRadius)));
     }
 
     /* Recompute lines */
@@ -95,21 +86,8 @@ Curve& Curve::setControlPoints(const Curve::VPoints& points) {
 }
 
 /****************************************************************************************************/
-Curve& Curve::updateDrawableControlPoints() {
-    CORRADE_INTERNAL_ASSERT(m_DrawableControlPoints.size() == m_ControlPoints.size());
-    for(size_t i = 0; i < m_DrawableControlPoints.size(); ++i) {
-        m_DrawableControlPoints[i]->setTransformation(Matrix4::translation(m_ControlPoints[i]) *
-                                                      Matrix4::scaling(Vector3(m_ControlPointRadius)));
-        m_DrawableControlPoints[i]->setColor(m_Color);
-    }
-    return *this;
-}
-
-/****************************************************************************************************/
-Curve& Curve::drawCurve(SceneGraph::Camera3D& camera, const Vector2i& viewport) {
-    if(!m_bEnable
-       || m_Points.empty()
-       ) {
+Curve& Curve::draw(SceneGraph::Camera3D& camera, const Vector2i& viewport) {
+    if(!m_bEnable || m_Points.empty()) {
         return *this;
     }
 
@@ -128,17 +106,9 @@ Curve& Curve::drawCurve(SceneGraph::Camera3D& camera, const Vector2i& viewport) 
         .setViewport(viewport)
         .draw(m_MeshLines);
 
-    return *this;
-}
-
-/****************************************************************************************************/
-Curve& Curve::drawControlPoints(Magnum::SceneGraph::Camera3D& camera) {
-    if(!m_bEnable
-       || m_ControlPoints.empty()
-       || !m_bRenderControlPoints
-       ) {
-        return *this;
+    if(m_bRenderControlPoints) {
+        camera.draw(m_Drawables);
     }
-    camera.draw(*m_DrawableGroup);
+
     return *this;
 }
