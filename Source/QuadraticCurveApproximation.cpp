@@ -15,6 +15,7 @@
  */
 
 #include <Corrade/Utility/Assert.h>
+#include <Corrade/Utility/Resource.h>
 #include <Magnum/Math/Color.h>
 #include <Magnum/MeshTools/Compile.h>
 #include <Magnum/Trade/MeshData.h>
@@ -30,8 +31,8 @@
 #include "DrawableObjects/Curves/CubicBezier.h"
 #include "DrawableObjects/Curves/QuadraticApproximatingCubic.h"
 
-#include <fstream>
 #include <sstream>
+#include <string>
 
 #include "QuadraticCurveApproximation.h"
 
@@ -46,7 +47,6 @@ QuadraticCurveApproximation::QuadraticCurveApproximation(Scene3D* const         
 
     quadC1BezierConfig.color     = Color3{ 1.0f, 0.0f, 0.0f };
     quadC1BezierConfig.thickness = 5.0f;
-    quadC1BezierConfig.bEnabled  = false; /* disable by default */
 
     m_Polylines = new Polyline(m_Scene, Color3{ 1.0f, 1.0f, 0.0f });
 
@@ -216,51 +216,31 @@ void QuadraticCurveApproximation::computeCurves() {
 }
 
 /****************************************************************************************************/
-void QuadraticCurveApproximation::loadControlPoints() {
-    std::ifstream file("points.txt");
-    if(!file.is_open()) {
-        Fatal() << "Cannot find point.txt";
-    }
+void QuadraticCurveApproximation::loadControlPoints(int curveID) {
+    Utility::Resource rs{ "data" };
+    std::stringstream infile(rs.get(curveID == 0 ? "points_bezier.txt" : "points_catmullrom.txt"));
 
     m_DataPoints.resize(0);
     std::string line;
     std::string x, y, z;
-    while(std::getline(file, line)) {
+    while(std::getline(infile, line)) {
         line.erase(line.find_last_not_of(" \n\r\t") + 1);
-
         if(line == "") {
             continue;
         }
-
         if(line.find("//") != std::string::npos) {
             continue;
         }
 
         std::istringstream iss(line);
         iss >> x >> y >> z;
-        m_DataPoints.push_back(Vector3{ stof(x), stof(y), stof(z) });
+        m_DataPoints.push_back(Vector3{ std::stof(x), std::stof(y), std::stof(z) });
     }
-    file.close();
-    // Debug() << "Loaded" << m_DataPoints.size() << "points";
 
     /* Update drawable points and curves */
-    m_bBezierFromCatmullRom = (m_DataPoints.size() % 4) != 0;
+    m_bBezierFromCatmullRom = m_DataPoints.size() != 4;
     computeBezierControlPoints();
     generateCurves();
-}
-
-/****************************************************************************************************/
-void QuadraticCurveApproximation::saveControlPoints() {
-    std::ofstream file("points.txt");
-    int           i = 0;
-    for(auto& p : m_DataPoints) {
-        if(i % 4 == 0) {
-            file << "\n// Control point of curve #" << i / 4 << "\n";
-        }
-        ++i;
-        file << p.x() << " " << p.y() << " " << p.z() << "\n";
-    }
-    file.close();
 }
 
 /****************************************************************************************************/

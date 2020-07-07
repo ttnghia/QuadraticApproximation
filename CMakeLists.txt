@@ -61,11 +61,13 @@ find_package(MagnumIntegration REQUIRED ImGui)
 
 file(GLOB_RECURSE H_FILES ${PROJECT_SOURCE_DIR}/Source/*.h)
 file(GLOB_RECURSE CPP_FILES ${PROJECT_SOURCE_DIR}/Source/*.cpp)
+corrade_add_resource(QuadraticApproximation_RESOURCES Resources.conf)
 
 add_executable(${PROJECT_NAME} WIN32
     ${PROJECT_SOURCE_DIR}/Externals/ImGuizmo/ImGuizmo.cpp
     ${H_FILES}
-    ${CPP_FILES})
+    ${CPP_FILES}
+    ${QuadraticApproximation_RESOURCES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Corrade::Main

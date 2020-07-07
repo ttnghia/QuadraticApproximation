@@ -85,7 +85,7 @@ void Application::drawEvent() {
                 m_Curves->setDataPoint(selectedPoint->idx(), translation);
 
                 /* Update all control points and curves */
-                m_Curves->saveControlPoints();
+                // m_Curves->saveControlPoints();
                 m_Curves->computeBezierControlPoints();
                 m_Curves->updatePolylines();
                 m_Curves->updateCurveControlPoints();
@@ -126,6 +126,15 @@ void Application::showMenu() {
             m_Curves->gamma() = 0.5f;
             m_Curves->updateCurveControlPoints();
             m_Curves->computeCurves();
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        const char* items[] = { "Cubic Bezier Curve", "Catmull-Rom Curve" };
+        static int  curveId { 0 };
+        if(ImGui::Combo("Demo Curve", &curveId, items, IM_ARRAYSIZE(items))) {
+            m_Curves->loadControlPoints(curveId);
         }
 
         ImGui::PopID();
