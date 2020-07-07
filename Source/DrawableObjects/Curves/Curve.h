@@ -40,7 +40,7 @@ public:
     using DrawablePoints = std::vector<PickableObject*>;
 
     explicit Curve(Scene3D* const scene,
-                   int            subdivision           = 128,
+                   int            subdivision           = 64,
                    const Color3&  color                 = Color3(1.0f),
                    float          thickness             = 1.0f,
                    bool           renderControlPoints   = true,
@@ -66,7 +66,7 @@ public:
 
 protected:
     virtual void computeLines() = 0;
-    void         convertToTriangleStrip(const Matrix4& transformPrjMat, const Vector2i& viewport);
+    void         convertToTriangleStrip(const Matrix4& transformPrjMat, const Vector2& viewport);
 
     /* Main variables */
     bool m_bEnable { true };

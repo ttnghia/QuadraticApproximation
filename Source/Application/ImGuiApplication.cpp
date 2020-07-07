@@ -139,7 +139,7 @@ void ImGuiApplication::endFrame() {
 /****************************************************************************************************/
 void ImGuiApplication::showMenuHeader() {
     ImGui::SetNextWindowBgAlpha(0.5f);
-    ImGui::Begin("Options", nullptr);
+    ImGui::Begin("Options", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
     ImGui::Text("Hide/show menu: H | Exit: ESC");
     ImGui::Text("%3.2f FPS", static_cast<double>(ImGui::GetIO().Framerate));
     ImGui::SameLine(100);

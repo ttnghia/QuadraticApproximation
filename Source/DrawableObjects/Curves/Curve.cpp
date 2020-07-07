@@ -25,7 +25,7 @@
 
 /****************************************************************************************************/
 Curve::Curve(Scene3D* const scene,
-             int            subdivision /*= 128*/,
+             int            subdivision /*= 64 */,
              const Color3&  color /*= Color3(1.0f)*/,
              float          thickness /*= 1.0f*/,
              bool           renderControlPoints /*= true*/,
@@ -87,9 +87,9 @@ Curve& Curve::setControlPoints(const Curve::VPoints& points) {
 }
 
 /****************************************************************************************************/
-void Curve::convertToTriangleStrip(const Matrix4& transformPrjMat, const Vector2i& viewport) {
+void Curve::convertToTriangleStrip(const Matrix4& transformPrjMat, const Vector2& viewport) {
     auto toScreenSpace = [&](const Vector4& vertex) {
-                             return Vector2(vertex.xy() / vertex.w()) * Vector2{ viewport };
+                             return Vector2(vertex.xy() / vertex.w()) * viewport;
                          };
     auto toZValue = [](const Vector4& vertex) {
                         return (vertex.z() / vertex.w());
@@ -117,7 +117,7 @@ void Curve::convertToTriangleStrip(const Matrix4& transformPrjMat, const Vector2
             Vector2 p3 = screenPoints[3];
 
             /* Perform naive culling */
-            Vector2 area = Vector2{ viewport } *4.0f;
+            Vector2 area = viewport * 4.0f;
             if(p1.x() < -area.x() || p1.x() > area.x()) { continue; }
             if(p1.y() < -area.y() || p1.y() > area.y()) { continue; }
             if(p2.x() < -area.x() || p2.x() > area.x()) { continue; }
@@ -158,13 +158,13 @@ void Curve::convertToTriangleStrip(const Matrix4& transformPrjMat, const Vector2
 
                 /* Close the gap */
                 if(Math::dot(v0, n1) > 0) {
-                    m_TriangleVerts.push_back(Vector3{ (p1 + m_Thickness * n0) / Vector2{ viewport }, zVals[1] });
-                    m_TriangleVerts.push_back(Vector3{ (p1 + m_Thickness * n1) / Vector2{ viewport }, zVals[1] });
-                    m_TriangleVerts.push_back(Vector3{ p1 / Vector2{ viewport }, zVals[1] });
+                    m_TriangleVerts.push_back(Vector3{ (p1 + m_Thickness * n0) / viewport, zVals[1] });
+                    m_TriangleVerts.push_back(Vector3{ (p1 + m_Thickness * n1) / viewport, zVals[1] });
+                    m_TriangleVerts.push_back(Vector3{ p1 / viewport, zVals[1] });
                 } else {
-                    m_TriangleVerts.push_back(Vector3{ (p1 - m_Thickness * n1) / Vector2{ viewport }, zVals[1] });
-                    m_TriangleVerts.push_back(Vector3{ (p1 - m_Thickness * n0) / Vector2{ viewport }, zVals[1] });
-                    m_TriangleVerts.push_back(Vector3{ p1 / Vector2{ viewport }, zVals[1] });
+                    m_TriangleVerts.push_back(Vector3{ (p1 - m_Thickness * n1) / viewport, zVals[1] });
+                    m_TriangleVerts.push_back(Vector3{ (p1 - m_Thickness * n0) / viewport, zVals[1] });
+                    m_TriangleVerts.push_back(Vector3{ p1 / viewport, zVals[1] });
                 }
             }
 
@@ -174,13 +174,13 @@ void Curve::convertToTriangleStrip(const Matrix4& transformPrjMat, const Vector2
             }
 
             /* Generate the triangle strip */
-            m_TriangleVerts.push_back(Vector3{ (p1 + length_a * miter_a) / Vector2{ viewport }, zVals[1] });
-            m_TriangleVerts.push_back(Vector3{ (p1 - length_a * miter_a) / Vector2{ viewport }, zVals[1] });
-            m_TriangleVerts.push_back(Vector3{ (p2 + length_b * miter_b) / Vector2{ viewport }, zVals[2] });
+            m_TriangleVerts.push_back(Vector3{ (p1 + length_a * miter_a) / viewport, zVals[1] });
+            m_TriangleVerts.push_back(Vector3{ (p1 - length_a * miter_a) / viewport, zVals[1] });
+            m_TriangleVerts.push_back(Vector3{ (p2 + length_b * miter_b) / viewport, zVals[2] });
 
-            m_TriangleVerts.push_back(Vector3{ (p2 + length_b * miter_b) / Vector2{ viewport }, zVals[2] });
-            m_TriangleVerts.push_back(Vector3{ (p1 - length_a * miter_a) / Vector2{ viewport }, zVals[1] });
-            m_TriangleVerts.push_back(Vector3{ (p2 - length_b * miter_b) / Vector2{ viewport }, zVals[2] });
+            m_TriangleVerts.push_back(Vector3{ (p2 + length_b * miter_b) / viewport, zVals[2] });
+            m_TriangleVerts.push_back(Vector3{ (p1 - length_a * miter_a) / viewport, zVals[1] });
+            m_TriangleVerts.push_back(Vector3{ (p2 - length_b * miter_b) / viewport, zVals[2] });
         }
     }
 }
@@ -194,7 +194,7 @@ Curve& Curve::draw(SceneGraph::Camera3D& camera, const Vector2i& viewport, bool 
     if(m_bDirty || bCamChanged) {
         m_TriangleVerts.resize(0);
         const Matrix4 transformPrjMat = camera.projectionMatrix() * camera.cameraMatrix();
-        convertToTriangleStrip(transformPrjMat, viewport);
+        convertToTriangleStrip(transformPrjMat, Vector2{ viewport });
         Containers::ArrayView<const float> data(reinterpret_cast<const float*>(&m_TriangleVerts[0]), m_TriangleVerts.size() * 3);
         m_BufferLines.setData(data);
         m_MeshLines.setCount(static_cast<int>(m_TriangleVerts.size()));

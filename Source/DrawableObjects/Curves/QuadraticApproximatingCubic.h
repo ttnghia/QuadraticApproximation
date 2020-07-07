@@ -21,7 +21,7 @@
 class QuadraticApproximatingCubic : public Curve {
 public:
     explicit QuadraticApproximatingCubic(Scene3D* const scene,
-                                         int            subdivision           = 128,
+                                         int            subdivision           = 64,
                                          const Color3&  color                 = Color3(1.0f),
                                          float          thickness             = 1.0f,
                                          bool           renderControlPoints   = true,
