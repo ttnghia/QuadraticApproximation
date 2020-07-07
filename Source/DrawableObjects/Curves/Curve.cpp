@@ -86,7 +86,7 @@ Curve& Curve::setControlPoints(const Curve::VPoints& points) {
 }
 
 /****************************************************************************************************/
-void Curve::convertToTriangleStrip(const Matrix4& transformPrjMat, const Vector2& viewport) {
+void Curve::convertToTriangles(const Matrix4& transformPrjMat, const Vector2& viewport) {
     auto toScreenSpace = [&](const Vector4& vertex) {
                              return Vector2(vertex.xy() / vertex.w()) * viewport;
                          };
@@ -136,8 +136,8 @@ void Curve::convertToTriangleStrip(const Matrix4& transformPrjMat, const Vector2
         const Vector2 n2 = Vector2(-v2.y(), v2.x());
 
         /* Determine miter lines by averaging the normals of the 2 segments */
-        Vector2 miter_a = (n0 + n1).normalized();  // miter at start of current segment
-        Vector2 miter_b = (n1 + n2).normalized();  // miter at end of current segment
+        Vector2 miter_a = (n0 + n1).normalized(); // miter at start of current segment
+        Vector2 miter_b = (n1 + n2).normalized(); // miter at end of current segment
 
         /* Determine the length of the miter by projecting it onto normal and then inverse it */
         float an1 = Math::dot(miter_a, n1);
@@ -188,7 +188,7 @@ Curve& Curve::draw(SceneGraph::Camera3D& camera, const Vector2i& viewport, bool 
 
     if(m_bDirty || bCamChanged) {
         const Matrix4 transformPrjMat = camera.projectionMatrix() * camera.cameraMatrix();
-        convertToTriangleStrip(transformPrjMat, Vector2{ viewport });
+        convertToTriangles(transformPrjMat, Vector2{ viewport });
         Containers::ArrayView<const float> data(reinterpret_cast<const float*>(&m_TriangleVerts[0]), m_TriangleVerts.size() * 3);
         m_BufferTriangles.setData(data);
         m_MesTriangles.setCount(static_cast<int>(m_TriangleVerts.size()));

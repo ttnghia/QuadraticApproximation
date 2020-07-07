@@ -66,7 +66,7 @@ public:
 
 protected:
     virtual void computeLines() = 0;
-    void         convertToTriangleStrip(const Matrix4& transformPrjMat, const Vector2& viewport);
+    void         convertToTriangles(const Matrix4& transformPrjMat, const Vector2& viewport);
 
     /* Main variables */
     bool m_bEnable { true };
