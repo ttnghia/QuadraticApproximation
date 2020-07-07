@@ -59,13 +59,14 @@ QuadraticCurveApproximation::QuadraticCurveApproximation(Scene3D* const         
 
 /****************************************************************************************************/
 QuadraticCurveApproximation& QuadraticCurveApproximation::draw(SceneGraph::Camera3D& camera,
-                                                               const Vector2i&       viewport) {
+                                                               const Vector2i&       viewport,
+                                                               bool                  bCamChanged) {
     auto drawCurves = [&](auto& curves) {
                           for(auto& curve: curves) {
-                              curve->draw(camera, viewport);
+                              curve->draw(camera, viewport, bCamChanged);
                           }
                       };
-    m_Polylines->draw(camera, viewport);
+    m_Polylines->draw(camera, viewport, bCamChanged);
     drawCurves(m_CubicBezierCurves);
     drawCurves(m_QuadraticC1Curves);
     return *this;

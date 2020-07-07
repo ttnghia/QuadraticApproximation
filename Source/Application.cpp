@@ -36,7 +36,7 @@ void Application::drawEvent() {
     ImGuiApplication::beginFrame();
 
     /* Update camera */
-    m_Camera->update();
+    bool bCamChanged = m_Camera->update();
 
     /* Draw to custom framebuffer */
     m_FrameBuffer
@@ -46,7 +46,7 @@ void Application::drawEvent() {
         .bind();
 
     /* Draw curves (with control points) */
-    m_Curves->draw(m_Camera->camera(), m_FrameBuffer.viewport().size());
+    m_Curves->draw(m_Camera->camera(), m_FrameBuffer.viewport().size(), bCamChanged);
 
     /* Draw other objects (grid) */
     m_Camera->draw(m_Drawables);

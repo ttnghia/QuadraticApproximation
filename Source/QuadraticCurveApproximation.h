@@ -44,7 +44,8 @@ public:
 public:
     explicit QuadraticCurveApproximation(Scene3D* const                     scene,
                                          SceneGraph::DrawableGroup3D* const drawables);
-    QuadraticCurveApproximation& draw(Magnum::SceneGraph::Camera3D& camera, const Vector2i& viewport);
+    QuadraticCurveApproximation& draw(Magnum::SceneGraph::Camera3D& camera, const Vector2i& viewport,
+                                      bool bCamChanged);
 
     void updateCurveConfigs();
     struct CurveConfig {
@@ -94,7 +95,7 @@ private:
     float m_gamma { 0.5f };
 
     /* Curves */
-    Polyline* m_Polylines;
-    std::vector<CubicBezier*>     m_CubicBezierCurves;
+    Polyline*                                 m_Polylines;
+    std::vector<CubicBezier*>                 m_CubicBezierCurves;
     std::vector<QuadraticApproximatingCubic*> m_QuadraticC1Curves;
 };

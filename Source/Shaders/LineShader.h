@@ -25,16 +25,7 @@ using namespace Magnum;
 class LineShader : public GL::AbstractShaderProgram {
 public:
     LineShader();
-    LineShader& setThickness(float thickness);
-    LineShader& setMiterLimit(float limit);
     LineShader& setColor(const Color3& color);
-    LineShader& setViewport(const Vector2i& viewport);
-    LineShader& setTransformationProjectionMatrix(const Matrix4& matrix);
-
 private:
-    Int m_uColor,
-        m_uThickness,
-        m_uMiterLimit,
-        m_uViewport,
-        m_uTransformationProjectionMatrix;
+    Int m_uColor;
 };

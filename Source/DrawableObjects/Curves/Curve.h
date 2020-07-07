@@ -49,7 +49,7 @@ public:
     virtual ~Curve();
 
     /* Operations */
-    Curve& draw(SceneGraph::Camera3D& camera, const Vector2i& viewport);
+    Curve& draw(SceneGraph::Camera3D& camera, const Vector2i& viewport, bool bCamChanged);
     Curve& recomputeCurve();
     Curve& setControlPoints(const VPoints& points);
 
@@ -66,6 +66,7 @@ public:
 
 protected:
     virtual void computeLines() = 0;
+    void         convertToTriangleStrip(const Matrix4& transformPrjMat, const Vector2i& viewport);
 
     /* Main variables */
     bool m_bEnable { true };
@@ -74,6 +75,7 @@ protected:
     /* Main points of line segments */
     int     m_Subdivision { 128 };
     VPoints m_Points;
+    VPoints m_TriangleVerts;
     Color3  m_Color { 1.0f };
     float   m_Thickness { 1.0f };
     float   m_MiterLimit { 0.1f };
