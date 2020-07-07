@@ -81,8 +81,8 @@ protected:
     float   m_MiterLimit { 0.1f };
 
     /* Render variables for line segments */
-    GL::Buffer m_BufferLines;
-    GL::Mesh   m_MeshLines;
+    GL::Buffer m_BufferTriangles;
+    GL::Mesh   m_MesTriangles;
     LineShader m_LineShader;
 
     /* Scene variable for rendering control points */

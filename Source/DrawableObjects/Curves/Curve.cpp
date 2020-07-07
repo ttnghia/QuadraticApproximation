@@ -32,8 +32,7 @@ Curve::Curve(Scene3D* const scene,
              bool           editableControlPoints /*= true*/,
              float          controlPointRadius /*= 0.05f*/) :
     m_Subdivision(subdivision),  m_Color(color), m_Thickness(thickness),
-    //    m_MeshLines{GL::MeshPrimitive::LineStripAdjacency},
-    m_MeshLines{GL::MeshPrimitive::Triangles},
+    m_MesTriangles{GL::MeshPrimitive::Triangles},
     m_Scene(scene),
     m_bRenderControlPoints(renderControlPoints),
     m_bEditableControlPoints(editableControlPoints),
@@ -42,7 +41,7 @@ Curve::Curve(Scene3D* const scene,
     CORRADE_INTERNAL_ASSERT(m_Scene);
 
     /* Setup mesh for line rendering */
-    m_MeshLines.addVertexBuffer(m_BufferLines, 0, Shaders::Generic3D::Position{});
+    m_MesTriangles.addVertexBuffer(m_BufferTriangles, 0, Shaders::Generic3D::Position{});
 
     /* Setup point rendering variables */
     m_MeshSphere = MeshTools::compile(Primitives::icosphereSolid(3));
@@ -54,7 +53,7 @@ Curve::~Curve() {} /* Must define in .cpp file to have complete types */
 /****************************************************************************************************/
 Curve& Curve::recomputeCurve() {
     m_Points.resize(0);
-    m_BufferLines.invalidateData();
+    m_BufferTriangles.invalidateData();
     computeLines();
     m_bDirty = true;
     return *this;
@@ -91,10 +90,9 @@ void Curve::convertToTriangleStrip(const Matrix4& transformPrjMat, const Vector2
     auto toScreenSpace = [&](const Vector4& vertex) {
                              return Vector2(vertex.xy() / vertex.w()) * viewport;
                          };
-    auto toZValue = [](const Vector4& vertex) {
-                        return (vertex.z() / vertex.w());
-                    };
+    auto toZValue = [](const Vector4& vertex) { return (vertex.z() / vertex.w()); };
 
+    m_TriangleVerts.resize(0);
     for(size_t i = 1; i < m_Points.size() - 2; ++i) {
         Vector4 points[4] { transformPrjMat* Vector4{ m_Points[i - 1], 1.0f },
                             transformPrjMat* Vector4{ m_Points[i + 0], 1.0f },
@@ -109,79 +107,76 @@ void Curve::convertToTriangleStrip(const Matrix4& transformPrjMat, const Vector2
                              toZValue(points[2]),
                              toZValue(points[3]) };
 
-        /* Convert segment to triangle strip */
-        {
-            Vector2 p0 = screenPoints[0];
-            Vector2 p1 = screenPoints[1];
-            Vector2 p2 = screenPoints[2];
-            Vector2 p3 = screenPoints[3];
+        const Vector2& p0 = screenPoints[0];
+        const Vector2& p1 = screenPoints[1];
+        const Vector2& p2 = screenPoints[2];
+        const Vector2& p3 = screenPoints[3];
 
-            /* Perform naive culling */
-            Vector2 area = viewport * 4.0f;
-            if(p1.x() < -area.x() || p1.x() > area.x()) { continue; }
-            if(p1.y() < -area.y() || p1.y() > area.y()) { continue; }
-            if(p2.x() < -area.x() || p2.x() > area.x()) { continue; }
-            if(p2.y() < -area.y() || p2.y() > area.y()) { continue; }
+        /* Perform naive culling */
+        const Vector2 area = viewport * 4.0f;
+        if(p1.x() < -area.x() || p1.x() > area.x()) { continue; }
+        if(p1.y() < -area.y() || p1.y() > area.y()) { continue; }
+        if(p2.x() < -area.x() || p2.x() > area.x()) { continue; }
+        if(p2.y() < -area.y() || p2.y() > area.y()) { continue; }
 
-            /* Determine the direction of each of the 3 segments (previous, current, next) */
-            Vector2 v0  = (p1 - p0);
-            Vector2 v1  = (p2 - p1);
-            Vector2 v2  = (p3 - p2);
-            float   lv0 = v0.length();
-            float   lv1 = v1.length();
-            float   lv2 = v2.length();
-            if(lv0 > 0) { v0 /= lv0; } else { v0 = v1; }
-            if(lv1 > 0) { v1 /= lv1; }
-            if(lv2 > 0) { v2 /= lv2; } else { v2 = v1; }
+        /* Determine the direction of each of the 3 segments (previous, current, next) */
+        Vector2 v0  = (p1 - p0);
+        Vector2 v1  = (p2 - p1);
+        Vector2 v2  = (p3 - p2);
+        float   lv0 = v0.length();
+        float   lv1 = v1.length();
+        float   lv2 = v2.length();
+        if(lv0 > 0) { v0 /= lv0; } else { v0 = v1; }
+        if(lv1 > 0) { v1 /= lv1; }
+        if(lv2 > 0) { v2 /= lv2; } else { v2 = v1; }
 
-            /* Determine the normal of each of the 3 segments (previous, current, next) */
-            Vector2 n0 = Vector2(-v0.y(), v0.x());
-            Vector2 n1 = Vector2(-v1.y(), v1.x());
-            Vector2 n2 = Vector2(-v2.y(), v2.x());
+        /* Determine the normal of each of the 3 segments (previous, current, next) */
+        const Vector2 n0 = Vector2(-v0.y(), v0.x());
+        const Vector2 n1 = Vector2(-v1.y(), v1.x());
+        const Vector2 n2 = Vector2(-v2.y(), v2.x());
 
-            /* Determine miter lines by averaging the normals of the 2 segments */
-            Vector2 miter_a = (n0 + n1).normalized(); // miter at start of current segment
-            Vector2 miter_b = (n1 + n2).normalized(); // miter at end of current segment
+        /* Determine miter lines by averaging the normals of the 2 segments */
+        Vector2 miter_a = (n0 + n1).normalized();  // miter at start of current segment
+        Vector2 miter_b = (n1 + n2).normalized();  // miter at end of current segment
 
-            /* Determine the length of the miter by projecting it onto normal and then inverse it */
-            float an1 = Math::dot(miter_a, n1);
-            float bn1 = Math::dot(miter_b, n2);
-            if(an1 == 0) { an1 = 1; }
-            if(bn1 == 0) { bn1 = 1; }
-            float length_a = m_Thickness / an1;
-            float length_b = m_Thickness / bn1;
+        /* Determine the length of the miter by projecting it onto normal and then inverse it */
+        float an1 = Math::dot(miter_a, n1);
+        float bn1 = Math::dot(miter_b, n2);
+        if(an1 == 0) { an1 = 1; }
+        if(bn1 == 0) { bn1 = 1; }
+        float length_a = m_Thickness / an1;
+        float length_b = m_Thickness / bn1;
 
-            /* Prevent excessively long miters at sharp corners */
-            if(Math::dot(v0, v1) < -m_MiterLimit) {
-                miter_a  = n1;
-                length_a = m_Thickness;
+        /* Prevent excessively long miters at sharp corners */
+        if(Math::dot(v0, v1) < -m_MiterLimit) {
+            miter_a  = n1;
+            length_a = m_Thickness;
 
-                /* Close the gap */
-                if(Math::dot(v0, n1) > 0) {
-                    m_TriangleVerts.push_back(Vector3{ (p1 + m_Thickness * n0) / viewport, zVals[1] });
-                    m_TriangleVerts.push_back(Vector3{ (p1 + m_Thickness * n1) / viewport, zVals[1] });
-                    m_TriangleVerts.push_back(Vector3{ p1 / viewport, zVals[1] });
-                } else {
-                    m_TriangleVerts.push_back(Vector3{ (p1 - m_Thickness * n1) / viewport, zVals[1] });
-                    m_TriangleVerts.push_back(Vector3{ (p1 - m_Thickness * n0) / viewport, zVals[1] });
-                    m_TriangleVerts.push_back(Vector3{ p1 / viewport, zVals[1] });
-                }
+            /* Close the gap */
+            if(Math::dot(v0, n1) > 0) {
+                m_TriangleVerts.push_back(Vector3{ (p1 + m_Thickness * n0) / viewport, zVals[1] });
+                m_TriangleVerts.push_back(Vector3{ (p1 + m_Thickness * n1) / viewport, zVals[1] });
+                m_TriangleVerts.push_back(Vector3{ p1 / viewport, zVals[1] });
+            } else {
+                m_TriangleVerts.push_back(Vector3{ (p1 - m_Thickness * n1) / viewport, zVals[1] });
+                m_TriangleVerts.push_back(Vector3{ (p1 - m_Thickness * n0) / viewport, zVals[1] });
+                m_TriangleVerts.push_back(Vector3{ p1 / viewport, zVals[1] });
             }
-
-            if(Math::dot(v1, v2) < -m_MiterLimit) {
-                miter_b  = n1;
-                length_b = m_Thickness;
-            }
-
-            /* Generate the triangle strip */
-            m_TriangleVerts.push_back(Vector3{ (p1 + length_a * miter_a) / viewport, zVals[1] });
-            m_TriangleVerts.push_back(Vector3{ (p1 - length_a * miter_a) / viewport, zVals[1] });
-            m_TriangleVerts.push_back(Vector3{ (p2 + length_b * miter_b) / viewport, zVals[2] });
-
-            m_TriangleVerts.push_back(Vector3{ (p2 + length_b * miter_b) / viewport, zVals[2] });
-            m_TriangleVerts.push_back(Vector3{ (p1 - length_a * miter_a) / viewport, zVals[1] });
-            m_TriangleVerts.push_back(Vector3{ (p2 - length_b * miter_b) / viewport, zVals[2] });
         }
+
+        if(Math::dot(v1, v2) < -m_MiterLimit) {
+            miter_b  = n1;
+            length_b = m_Thickness;
+        }
+
+        /* Generate 2 triangles */
+        m_TriangleVerts.push_back(Vector3{ (p1 + length_a * miter_a) / viewport, zVals[1] });
+        m_TriangleVerts.push_back(Vector3{ (p1 - length_a * miter_a) / viewport, zVals[1] });
+        m_TriangleVerts.push_back(Vector3{ (p2 + length_b * miter_b) / viewport, zVals[2] });
+
+        m_TriangleVerts.push_back(Vector3{ (p2 + length_b * miter_b) / viewport, zVals[2] });
+        m_TriangleVerts.push_back(Vector3{ (p1 - length_a * miter_a) / viewport, zVals[1] });
+        m_TriangleVerts.push_back(Vector3{ (p2 - length_b * miter_b) / viewport, zVals[2] });
     }
 }
 
@@ -192,21 +187,14 @@ Curve& Curve::draw(SceneGraph::Camera3D& camera, const Vector2i& viewport, bool 
     }
 
     if(m_bDirty || bCamChanged) {
-        m_TriangleVerts.resize(0);
         const Matrix4 transformPrjMat = camera.projectionMatrix() * camera.cameraMatrix();
         convertToTriangleStrip(transformPrjMat, Vector2{ viewport });
         Containers::ArrayView<const float> data(reinterpret_cast<const float*>(&m_TriangleVerts[0]), m_TriangleVerts.size() * 3);
-        m_BufferLines.setData(data);
-        m_MeshLines.setCount(static_cast<int>(m_TriangleVerts.size()));
+        m_BufferTriangles.setData(data);
+        m_MesTriangles.setCount(static_cast<int>(m_TriangleVerts.size()));
         m_bDirty = false;
     }
-
-    m_LineShader.setColor(m_Color)
-        .draw(m_MeshLines);
-
-    if(m_bRenderControlPoints) {
-        camera.draw(m_Drawables);
-    }
-
+    m_LineShader.setColor(m_Color).draw(m_MesTriangles);
+    if(m_bRenderControlPoints) { camera.draw(m_Drawables); }
     return *this;
 }

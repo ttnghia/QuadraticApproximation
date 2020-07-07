@@ -27,24 +27,19 @@ LineShader::LineShader() {
     GL::Shader vertShader{ GL::Version::GL330, GL::Shader::Type::Vertex };
     GL::Shader fragShader{ GL::Version::GL330, GL::Shader::Type::Fragment };
 
+    /*
+     * This shader is similar to a flat shader, but the given positions are already projected
+     * Therefore, the mesh buffer needs to be updated everytime the camera changed
+     */
     const std::string srcVert = R"(
-        uniform highp mat4 transformationProjectionMatrix;
-
-        /* Matches LineShader::Position and LineShader::Normal definitions */
-        layout(location = 0) in highp vec4 position;
-
-        void main() {
-            gl_Position = position;
-        }
+        in vec3 position;
+        void main() { gl_Position = vec4(position, 1); }
     )";
 
     const std::string srcFrag = R"(
-        uniform lowp vec3 color;
-        layout(location = 0) out lowp vec4 fragmentColor;
-
-        void main() {
-            fragmentColor = vec4(color, 1.0);
-        }
+        uniform vec3 color;
+        out vec4 fragmentColor;
+        void main() { fragmentColor = vec4(color, 1.0); }
     )";
 
     vertShader.addSource(srcVert);
