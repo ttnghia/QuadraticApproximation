@@ -49,13 +49,13 @@ protected:
             const auto one_m_s     = 1.0f - s;
             const auto one_m_s_sqr = one_m_s * one_m_s;
 
-            const auto position = (t < 0.5f) ?
-                                  one_m_s_sqr * Q0 + 2.0f * one_m_s * s * Q1 + s_sqr * Q2 :
-                                  one_m_s_sqr * Q2 + 2.0f * one_m_s * s * Q3 + s_sqr * Q4;
-            m_Points.push_back(position);
+            const auto pos = (t < 0.5f) ?
+                             one_m_s_sqr * Q0 + 2.0f * one_m_s * s * Q1 + s_sqr * Q2 :
+                             one_m_s_sqr * Q2 + 2.0f * one_m_s * s * Q3 + s_sqr * Q4;
+            arrayAppend(m_Points, pos);
 
             if(i == 0 || i == m_Subdivision) {
-                m_Points.push_back(position);
+                arrayAppend(m_Points, pos);
             }
         }
     }

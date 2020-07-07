@@ -53,8 +53,8 @@ public:
 
 private:
     static uint32_t getUniqueID();
-    static inline std::vector<PickableObject*> s_GeneratedObjs;
-    static inline PickableObject*              s_SelectedObj { nullptr };
+    static inline Containers::Array<PickableObject*> s_GeneratedObjs;
+    static inline PickableObject*                    s_SelectedObj { nullptr };
 
     bool     m_bSelectable { true };
     bool     m_bSelected { false };

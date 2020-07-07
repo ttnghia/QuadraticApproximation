@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <Corrade/Containers/Array.h>
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/Math/Color.h>
 #include <Magnum/Shaders/Phong.h>
@@ -38,8 +39,8 @@ class CatmullRomCurve;
 class QuadraticCurveApproximation {
 public:
     /* The main control points */
-    using VPoints        = std::vector<Vector3>;
-    using DrawablePoints = std::vector<PickableObject*>;
+    using VPoints        = Containers::Array<Vector3>;
+    using DrawablePoints = Containers::Array<PickableObject*>;
 
 public:
     explicit QuadraticCurveApproximation(Scene3D* const                     scene,
@@ -71,7 +72,6 @@ public:
     void loadControlPoints(int curveID = 0);
 
 private:
-    void resetDataPoints();
     void updateDrawablePoints();
     void computeBezierControlPointsFromCatmullRom();
 
@@ -93,7 +93,7 @@ private:
     float m_gamma { 0.5f };
 
     /* Curves */
-    Polyline*                                 m_Polylines;
-    std::vector<CubicBezier*>                 m_CubicBezierCurves;
-    std::vector<QuadraticApproximatingCubic*> m_QuadraticC1Curves;
+    Polyline* m_Polylines;
+    Containers::Array<CubicBezier*>                 m_CubicBezierCurves;
+    Containers::Array<QuadraticApproximatingCubic*> m_QuadraticC1Curves;
 };

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <Corrade/Containers/GrowableArray.h>
 #include <Corrade/Utility/Assert.h>
 #include <Corrade/Utility/Resource.h>
 #include <Magnum/Math/Color.h>
@@ -97,19 +98,15 @@ void QuadraticCurveApproximation::setDataPoint(uint32_t selectedIdx, const Vecto
 }
 
 /****************************************************************************************************/
-void QuadraticCurveApproximation::resetDataPoints() {
-    m_DataPoints = m_DataPoints_t0;
-    computeBezierControlPoints();
-    generateCurves();
-}
-
-/****************************************************************************************************/
 void QuadraticCurveApproximation::computeBezierControlPoints() {
     if(m_bBezierFromCatmullRom) {
         computeBezierControlPointsFromCatmullRom();
         cubicBezierConfig.bRenderControlPoints = true;
     } else {
-        m_BezierControlPoints = m_DataPoints;
+        arrayResize(m_BezierControlPoints, 0);
+        for(const auto& p : m_DataPoints) {
+            arrayAppend(m_BezierControlPoints, p);
+        }
         cubicBezierConfig.bRenderControlPoints = false;
     }
 }
@@ -120,24 +117,24 @@ void QuadraticCurveApproximation::generateCurves() {
     const auto nCurves        = m_BezierControlPoints.size() / 4;
 
     for(size_t i = nCurrentCurves; i < nCurves; ++i) {
-        m_CubicBezierCurves.push_back(new CubicBezier(m_Scene, m_Subdivision,
-                                                      cubicBezierConfig.color,
-                                                      cubicBezierConfig.thickness,
-                                                      cubicBezierConfig.bRenderControlPoints,
-                                                      false,
-                                                      cubicBezierConfig.controlPointRadius));
-        m_QuadraticC1Curves.push_back(new QuadraticApproximatingCubic(m_Scene, m_Subdivision >> 1,
-                                                                      quadC1BezierConfig.color,
-                                                                      quadC1BezierConfig.thickness,
-                                                                      quadC1BezierConfig.bRenderControlPoints,
-                                                                      false,
-                                                                      quadC1BezierConfig.controlPointRadius));
+        arrayAppend(m_CubicBezierCurves, new CubicBezier(m_Scene, m_Subdivision,
+                                                         cubicBezierConfig.color,
+                                                         cubicBezierConfig.thickness,
+                                                         cubicBezierConfig.bRenderControlPoints,
+                                                         false,
+                                                         cubicBezierConfig.controlPointRadius));
+        arrayAppend(m_QuadraticC1Curves, new QuadraticApproximatingCubic(m_Scene, m_Subdivision >> 1,
+                                                                         quadC1BezierConfig.color,
+                                                                         quadC1BezierConfig.thickness,
+                                                                         quadC1BezierConfig.bRenderControlPoints,
+                                                                         false,
+                                                                         quadC1BezierConfig.controlPointRadius));
         m_QuadraticC1Curves.back()->enabled() = quadC1BezierConfig.bEnabled;
     }
 
     /* Reduce number of curves, if applicable */
-    m_CubicBezierCurves.resize(nCurves);
-    m_QuadraticC1Curves.resize(nCurves);
+    arrayResize(m_CubicBezierCurves, nCurves);
+    arrayResize(m_QuadraticC1Curves, nCurves);
 
     /* Update polyline and quadratic curves */
     updatePolylines();
@@ -149,13 +146,13 @@ void QuadraticCurveApproximation::generateCurves() {
 
 /****************************************************************************************************/
 void QuadraticCurveApproximation::updatePolylines() {
-    m_Polylines->setControlPoints(m_BezierControlPoints);
+    m_Polylines->setControlPoints(m_BezierControlPoints.data(), m_BezierControlPoints.size());
 }
 
 /****************************************************************************************************/
 void QuadraticCurveApproximation::updateDrawablePoints() {
     size_t oldSize = m_DrawablePoints.size();
-    m_DrawablePoints.resize(m_DataPoints.size());
+    arrayResize(m_DrawablePoints, m_DataPoints.size());
 
     for(size_t i = oldSize; i < m_DataPoints.size(); ++i) {
         auto& newPoint = m_DrawablePoints[i];
@@ -183,22 +180,22 @@ void QuadraticCurveApproximation::updateCurveControlPoints() {
     const auto nCurves = m_BezierControlPoints.size() / 4;
 
     for(size_t idx = 0; idx < nCurves; ++idx) {
-        VPoints B = {
+        Vector3 B[4] {
             m_BezierControlPoints[idx * 4],
             m_BezierControlPoints[idx * 4 + 1],
             m_BezierControlPoints[idx * 4 + 2],
             m_BezierControlPoints[idx * 4 + 3]
         };
-        m_CubicBezierCurves[idx]->setControlPoints(B);
+        m_CubicBezierCurves[idx]->setControlPoints(B, 4);
 
         /* Compute control points of the quadratic C1 curves */
-        VPoints Q(5);
+        Vector3 Q[5];
         Q[0] = B[0];
         Q[4] = B[3];
         Q[1] = B[0] + 1.5f * m_gamma * (B[1] - B[0]);
         Q[3] = B[3] - 1.5f * (1.0f - m_gamma) * (B[3] - B[2]);
         Q[2] = (1.0f - m_gamma) * Q[1] + m_gamma * Q[3];
-        m_QuadraticC1Curves[idx]->setControlPoints(Q);
+        m_QuadraticC1Curves[idx]->setControlPoints(Q, 5);
     }
 }
 
@@ -220,7 +217,7 @@ void QuadraticCurveApproximation::loadControlPoints(int curveID) {
     Utility::Resource rs{ "data" };
     std::stringstream infile(rs.get(curveID == 0 ? "points_bezier.txt" : "points_catmullrom.txt"));
 
-    m_DataPoints.resize(0);
+    arrayResize(m_DataPoints, 0);
     std::string line;
     std::string x, y, z;
     while(std::getline(infile, line)) {
@@ -234,7 +231,7 @@ void QuadraticCurveApproximation::loadControlPoints(int curveID) {
 
         std::istringstream iss(line);
         iss >> x >> y >> z;
-        m_DataPoints.push_back(Vector3{ std::stof(x), std::stof(y), std::stof(z) });
+        arrayAppend(m_DataPoints, Vector3{ std::stof(x), std::stof(y), std::stof(z) });
     }
 
     /* Update drawable points and curves */
@@ -272,9 +269,11 @@ void QuadraticCurveApproximation::computeBezierControlPointsFromCatmullRom() {
             return B;
         };
 
-    m_BezierControlPoints.resize(0);
+    arrayResize(m_BezierControlPoints, 0);
     for(size_t i = 0; i < m_DataPoints.size() - 3; ++i) {
         const auto bpoints = convert(m_DataPoints, i, m_CatmullRom_Alpha);
-        m_BezierControlPoints.insert(m_BezierControlPoints.end(), bpoints.begin(), bpoints.end());
+        for(const auto& p : bpoints) {
+            arrayAppend(m_BezierControlPoints, p);
+        }
     }
 }

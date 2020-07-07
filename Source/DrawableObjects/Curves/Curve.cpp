@@ -52,7 +52,7 @@ Curve::~Curve() {} /* Must define in .cpp file to have complete types */
 
 /****************************************************************************************************/
 Curve& Curve::recomputeCurve() {
-    m_Points.resize(0);
+    arrayResize(m_Points, 0);
     m_BufferTriangles.invalidateData();
     computeLines();
     m_bDirty = true;
@@ -60,12 +60,16 @@ Curve& Curve::recomputeCurve() {
 }
 
 /****************************************************************************************************/
-Curve& Curve::setControlPoints(const Curve::VPoints& points) {
-    m_ControlPoints = points;
+Curve& Curve::setControlPoints(const Vector3* points, size_t nPoints) {
+    arrayResize(m_ControlPoints, 0);
+    for(size_t i = 0; i < nPoints; ++i) {
+        const auto& p = points[i];
+        arrayAppend(m_ControlPoints, p);
+    }
     size_t oldSize = m_DrawablePoints.size();
-    m_DrawablePoints.resize(points.size());
+    arrayResize(m_DrawablePoints, nPoints);
 
-    for(size_t i = oldSize; i < points.size(); ++i) {
+    for(size_t i = oldSize; i < nPoints; ++i) {
         auto& newPoint = m_DrawablePoints[i];
         newPoint = new PickableObject(m_SphereShader,
                                       m_Color,
@@ -92,7 +96,7 @@ void Curve::convertToTriangles(const Matrix4& transformPrjMat, const Vector2& vi
                          };
     auto toZValue = [](const Vector4& vertex) { return (vertex.z() / vertex.w()); };
 
-    m_TriangleVerts.resize(0);
+    arrayResize(m_TriangleVerts, 0);
     for(size_t i = 1; i < m_Points.size() - 2; ++i) {
         Vector4 points[4] { transformPrjMat* Vector4{ m_Points[i - 1], 1.0f },
                             transformPrjMat* Vector4{ m_Points[i + 0], 1.0f },
@@ -154,13 +158,13 @@ void Curve::convertToTriangles(const Matrix4& transformPrjMat, const Vector2& vi
 
             /* Close the gap */
             if(Math::dot(v0, n1) > 0) {
-                m_TriangleVerts.push_back(Vector3{ (p1 + m_Thickness * n0) / viewport, zVals[1] });
-                m_TriangleVerts.push_back(Vector3{ (p1 + m_Thickness * n1) / viewport, zVals[1] });
-                m_TriangleVerts.push_back(Vector3{ p1 / viewport, zVals[1] });
+                arrayAppend(m_TriangleVerts, Containers::InPlaceInit, Vector3{ (p1 + m_Thickness * n0) / viewport, zVals[1] });
+                arrayAppend(m_TriangleVerts, Containers::InPlaceInit, Vector3{ (p1 + m_Thickness * n1) / viewport, zVals[1] });
+                arrayAppend(m_TriangleVerts, Containers::InPlaceInit, Vector3{ p1 / viewport, zVals[1] });
             } else {
-                m_TriangleVerts.push_back(Vector3{ (p1 - m_Thickness * n1) / viewport, zVals[1] });
-                m_TriangleVerts.push_back(Vector3{ (p1 - m_Thickness * n0) / viewport, zVals[1] });
-                m_TriangleVerts.push_back(Vector3{ p1 / viewport, zVals[1] });
+                arrayAppend(m_TriangleVerts, Containers::InPlaceInit, Vector3{ (p1 - m_Thickness * n1) / viewport, zVals[1] });
+                arrayAppend(m_TriangleVerts, Containers::InPlaceInit, Vector3{ (p1 - m_Thickness * n0) / viewport, zVals[1] });
+                arrayAppend(m_TriangleVerts, Containers::InPlaceInit, Vector3{ p1 / viewport, zVals[1] });
             }
         }
 
@@ -170,13 +174,13 @@ void Curve::convertToTriangles(const Matrix4& transformPrjMat, const Vector2& vi
         }
 
         /* Generate 2 triangles */
-        m_TriangleVerts.push_back(Vector3{ (p1 + length_a * miter_a) / viewport, zVals[1] });
-        m_TriangleVerts.push_back(Vector3{ (p1 - length_a * miter_a) / viewport, zVals[1] });
-        m_TriangleVerts.push_back(Vector3{ (p2 + length_b * miter_b) / viewport, zVals[2] });
+        arrayAppend(m_TriangleVerts, Containers::InPlaceInit, Vector3{ (p1 + length_a * miter_a) / viewport, zVals[1] });
+        arrayAppend(m_TriangleVerts, Containers::InPlaceInit, Vector3{ (p1 - length_a * miter_a) / viewport, zVals[1] });
+        arrayAppend(m_TriangleVerts, Containers::InPlaceInit, Vector3{ (p2 + length_b * miter_b) / viewport, zVals[2] });
 
-        m_TriangleVerts.push_back(Vector3{ (p2 + length_b * miter_b) / viewport, zVals[2] });
-        m_TriangleVerts.push_back(Vector3{ (p1 - length_a * miter_a) / viewport, zVals[1] });
-        m_TriangleVerts.push_back(Vector3{ (p2 - length_b * miter_b) / viewport, zVals[2] });
+        arrayAppend(m_TriangleVerts, Containers::InPlaceInit, Vector3{ (p2 + length_b * miter_b) / viewport, zVals[2] });
+        arrayAppend(m_TriangleVerts, Containers::InPlaceInit, Vector3{ (p1 - length_a * miter_a) / viewport, zVals[1] });
+        arrayAppend(m_TriangleVerts, Containers::InPlaceInit, Vector3{ (p2 - length_b * miter_b) / viewport, zVals[2] });
     }
 }
 

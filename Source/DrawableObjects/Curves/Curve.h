@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include "Shaders/LineShader.h"
-
+#include <Corrade/Containers/Array.h>
+#include <Corrade/Containers/GrowableArray.h>
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/Math/Color.h>
@@ -25,7 +25,7 @@
 #include <Magnum/Shaders/Phong.h>
 #include <Magnum/SceneGraph/Drawable.h>
 
-#include <vector>
+#include "Shaders/LineShader.h"
 
 using namespace Corrade;
 using namespace Magnum;
@@ -36,8 +36,8 @@ class PickableObject;
 class Curve {
 public:
     using Point          = Vector3;
-    using VPoints        = std::vector<Vector3>;
-    using DrawablePoints = std::vector<PickableObject*>;
+    using VPoints        = Containers::Array<Vector3>;
+    using DrawablePoints = Containers::Array<PickableObject*>;
 
     explicit Curve(Scene3D* const scene,
                    int            subdivision           = 64,
@@ -51,7 +51,7 @@ public:
     /* Operations */
     Curve& draw(SceneGraph::Camera3D& camera, const Vector2i& viewport, bool bCamChanged);
     Curve& recomputeCurve();
-    Curve& setControlPoints(const VPoints& points);
+    Curve& setControlPoints(const Vector3* points, size_t nPoints);
 
     /* General curve data */
     int& subdivision() { return m_Subdivision; }

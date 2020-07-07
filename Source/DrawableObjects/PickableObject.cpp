@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-#include "DrawableObjects/PickableObject.h"
-
+#include <Corrade/Containers/GrowableArray.h>
 #include <Magnum/SceneGraph/Camera.h>
 #include <Magnum/SceneGraph/Scene.h>
 #include <Magnum/GL/Mesh.h>
+
+#include "DrawableObjects/PickableObject.h"
 
 /****************************************************************************************************/
 PickableObject::PickableObject(Shaders::Phong& shader, const Color3& color,
@@ -32,7 +33,7 @@ PickableObject::PickableObject(Shaders::Phong& shader, const Color3& color,
     m_Color{color},
     m_Mesh(mesh) {
     /* Register this object into the global list */
-    s_GeneratedObjs.push_back(this);
+    arrayAppend(s_GeneratedObjs, this);
 }
 
 /****************************************************************************************************/
@@ -41,7 +42,7 @@ PickableObject::~PickableObject() {
     for(size_t i = 0; i < s_GeneratedObjs.size(); ++i) {
         if(s_GeneratedObjs[i] == this) {
             s_GeneratedObjs[i] = s_GeneratedObjs.back();
-            s_GeneratedObjs.resize(s_GeneratedObjs.size() - 1);
+            arrayResize(s_GeneratedObjs, s_GeneratedObjs.size() - 1);
             break;
         }
     }

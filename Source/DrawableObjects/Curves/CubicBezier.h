@@ -47,14 +47,14 @@ protected:
             const auto one_m_t     = 1.0f - t;
             const auto one_m_t_sqr = one_m_t * one_m_t;
 
-            const auto position = one_m_t * one_m_t_sqr * B0 +
-                                  3.0f * one_m_t_sqr * t * B1 +
-                                  3.0f * one_m_t * t_sqr * B2 +
-                                  t * t_sqr * B3;
-            m_Points.push_back(position);
+            const auto pos = one_m_t * one_m_t_sqr * B0 +
+                             3.0f * one_m_t_sqr * t * B1 +
+                             3.0f * one_m_t * t_sqr * B2 +
+                             t * t_sqr * B3;
+            arrayAppend(m_Points, pos);
 
             if(i == 0 || i == m_Subdivision) {
-                m_Points.push_back(position);
+                arrayAppend(m_Points, pos);
             }
         }
     }

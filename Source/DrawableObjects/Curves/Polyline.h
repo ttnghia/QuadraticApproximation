@@ -33,11 +33,11 @@ protected:
         if(m_ControlPoints.size() == 0) {
             return;
         }
-        m_Points.resize(0);
-        m_Points.push_back(m_ControlPoints[0]);
+        arrayResize(m_Points, 0);
+        arrayAppend(m_Points, m_ControlPoints[0]);
         for(size_t i = 0; i < m_ControlPoints.size(); ++i) {
-            m_Points.push_back(m_ControlPoints[i]);
+            arrayAppend(m_Points, m_ControlPoints[i]);
         }
-        m_Points.push_back(m_Points.back());
+        arrayAppend(m_Points, m_Points.back());
     }
 };
