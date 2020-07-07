@@ -135,6 +135,11 @@ void Application::showMenu() {
         static int  curveId { 0 };
         if(ImGui::Combo("Demo Curve", &curveId, items, IM_ARRAYSIZE(items))) {
             m_Curves->loadControlPoints(curveId);
+            if(curveId == 1) {
+                m_DefaultCamPosition = Vector3(0.3f, 1.7f, 8.0f);
+                m_DefaultCamTarget   = Vector3(0.3f, 1.2f, 0.0f);
+                setupCamera();
+            }
         }
 
         ImGui::PopID();
