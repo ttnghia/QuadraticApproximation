@@ -89,7 +89,7 @@ private:
     /* Line subdivision and curve approximation */
     bool  m_bBezierFromCatmullRom { false };
     float m_CatmullRom_Alpha { 0.5f };
-    int   m_Subdivision { 128 };
+    int   m_Subdivision { 64 };
     float m_gamma { 0.5f };
 
     /* Curves */
