@@ -143,9 +143,11 @@ void ImGuiApplication::showMenuHeader() {
     ImGui::Text("Hide/show menu: H | Exit: ESC");
     ImGui::Text("%3.2f FPS", static_cast<double>(ImGui::GetIO().Framerate));
     ImGui::SameLine(100);
+    #ifndef CORRADE_TARGET_EMSCRIPTEN
     if(ImGui::Checkbox("VSync", &m_bVsync)) {
         setSwapInterval(m_bVsync);
     }
+    #endif
     ImGui::Spacing();
     ImGui::Checkbox("Render grid", &m_Grid->enabled());
     ImGui::ColorEdit3("Background color", m_BkgColor.data());

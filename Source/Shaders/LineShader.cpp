@@ -24,21 +24,33 @@
 
 /****************************************************************************************************/
 LineShader::LineShader() {
-    GL::Shader vertShader{ GL::Version::GL330, GL::Shader::Type::Vertex };
-    GL::Shader fragShader{ GL::Version::GL330, GL::Shader::Type::Fragment };
+    GL::Shader vertShader{
+        #ifndef MAGNUM_TARGET_GLES
+        GL::Version::GL330,
+        #else
+        GL::Version::GLES300,
+        #endif
+        GL::Shader::Type::Vertex };
+    GL::Shader fragShader{
+        #ifndef MAGNUM_TARGET_GLES
+        GL::Version::GL330,
+        #else
+        GL::Version::GLES300,
+        #endif
+        GL::Shader::Type::Fragment };
 
     /*
      * This shader is similar to a flat shader, but the given positions are already projected
      * Therefore, the mesh buffer needs to be updated everytime the camera changed
      */
     const std::string srcVert = R"(
-        in vec3 position;
+        in highp vec3 position;
         void main() { gl_Position = vec4(position, 1); }
     )";
 
     const std::string srcFrag = R"(
-        uniform vec3 color;
-        out vec4 fragmentColor;
+        uniform lowp vec3 color;
+        out lowp vec4 fragmentColor;
         void main() { fragmentColor = vec4(color, 1.0); }
     )";
 
