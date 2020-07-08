@@ -23,7 +23,13 @@
 class ImGuiApplication : public GLApplication {
 public:
     explicit ImGuiApplication(const std::string& title, const Arguments& arguments,
-                              const Vector2i& defaultWindowSize = Vector2i{ 1920, 1080 });
+                              const Vector2i& defaultWindowSize =
+                              #ifndef CORRADE_TARGET_EMSCRIPTEN
+                              Vector2i{ 1920, 1080 }
+                              #else
+                              {}
+                              #endif
+                              );
 
 protected:
     void viewportEvent(ViewportEvent& event) override;
