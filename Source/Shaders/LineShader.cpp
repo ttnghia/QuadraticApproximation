@@ -50,8 +50,12 @@ LineShader::LineShader() {
 
     const std::string srcFrag = R"(
         uniform lowp vec3 color;
-        out lowp vec4 fragmentColor;
-        void main() { fragmentColor = vec4(color, 1.0); }
+        layout(location = 0) out lowp vec4 fragmentColor;
+        layout(location = 1) out highp uint webglIsStupid;
+        void main() {
+            fragmentColor = vec4(color, 1.0);
+            webglIsStupid = 0u;
+        }
     )";
 
     vertShader.addSource(srcVert);

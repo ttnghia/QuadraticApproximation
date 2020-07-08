@@ -31,6 +31,6 @@ Grid::Grid(Scene3D* const                     scene,
     m_Obj3D->scale(Vector3(10.0f));
     m_Obj3D->rotateX(90.0_degf);
 
-    m_FlatShader = Shaders::Flat3D{};
+    m_FlatShader = Shaders::Flat3D{Shaders::Flat3D::Flag::ObjectId};
     m_DrawableObj.emplace(*m_Obj3D.get(), m_FlatShader, Color3(0.75f), m_Mesh, drawableGroup);
 }
