@@ -89,15 +89,19 @@ void PickableApplication::mousePressEvent(MouseEvent& event) {
         return;
     }
 
+    /* First scale the position from being relative to window size to being
+       relative to framebuffer size as those two can be different on HiDPI
+       systems */
+    const Vector2i position = event.position()*Vector2{framebufferSize()}/Vector2{windowSize()};
+    const Vector2i fbPosition{position.x(), framebufferSize().y() - position.y() - 1};
+
     /* Update picking object
      * Read object ID at given click position (framebuffer has Y up while windowing system Y down)
      * If is there any active text edit, then just deselect object
      */
     m_FrameBuffer.mapForRead(GL::Framebuffer::ColorAttachment{ 1 });
     Image2D data = m_FrameBuffer.read(
-        Range2Di::fromSize({ event.position().x(),
-                             m_FrameBuffer.viewport().sizeY() - event.position().y() - 1 },
-                           { 1, 1 }),
+        Range2Di::fromSize(fbPosition, { 1, 1 }),
         { m_PixelFormat });
 
     uint32_t idx = 0;
