@@ -34,7 +34,7 @@ GLApplication::GLApplication(const std::string& title, const Arguments& argument
                .setTitle(title)
                .setSize(defaultWindowSize)
                .setWindowFlags(Configuration::WindowFlag::Resizable),
-           GLConfiguration{}.setSampleCount(this->dpiScaling({}).max() < 2.0f ? 8 : 2));
+           GLConfiguration{}.setSampleCount(0));
     #ifndef MAGNUM_TARGET_GLES
     MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
     #endif
