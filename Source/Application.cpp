@@ -40,6 +40,10 @@ void Application::drawEvent() {
 
     /* Draw to custom framebuffer */
     m_FrameBuffer
+        .mapForDraw({
+            {Shaders::Phong::ColorOutput, GL::Framebuffer::ColorAttachment{0}},
+            {Shaders::Phong::ObjectIdOutput, GL::Framebuffer::ColorAttachment{1}},
+        })
         .clearColor(0, m_BkgColor)
         .clearColor(1, Vector4ui{})
         .clearDepth(1.0f)
@@ -52,7 +56,9 @@ void Application::drawEvent() {
     m_Camera->draw(m_Drawables);
 
     /* Bind the default framebuffer back, as only the clickable objects need to be render to custom framebuffer */
-    GL::defaultFramebuffer.bind();
+    GL::defaultFramebuffer
+        .mapForDraw({ { Shaders::Phong::ColorOutput, GL::DefaultFramebuffer::DrawAttachment::Back}})
+        .bind();
 
     /* Blit color to window framebuffer */
     m_FrameBuffer.mapForRead(GL::Framebuffer::ColorAttachment{ 0 });

@@ -23,7 +23,11 @@
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Color.h>
 #include <Magnum/Math/Vector3.h>
+#ifndef CORRADE_TARGET_EMSCRIPTEN
 #include <Magnum/Platform/GlfwApplication.h>
+#else
+#include <Magnum/Platform/EmscriptenApplication.h>
+#endif
 #include <Magnum/SceneGraph/MatrixTransformation3D.h>
 #include <Magnum/SceneGraph/Scene.h>
 #include <Magnum/SceneGraph/Drawable.h>
@@ -53,7 +57,9 @@ protected:
     void setupCamera();
 
     /* Window control */
+    #ifndef CORRADE_TARGET_EMSCRIPTEN
     bool   m_bVsync { true };
+    #endif
     Color3 m_BkgColor { 0.35f };
 
     /* Scene and drawable group */

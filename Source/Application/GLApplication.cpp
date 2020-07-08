@@ -34,11 +34,15 @@ GLApplication::GLApplication(const std::string& title, const Arguments& argument
                .setTitle(title)
                .setSize(defaultWindowSize)
                .setWindowFlags(Configuration::WindowFlag::Resizable),
-           GLConfiguration{}.setSampleCount(this->dpiScaling({}).max() < 2.0f ? 8 : 2));
+           GLConfiguration{}.setSampleCount(0));
+    #ifndef MAGNUM_TARGET_GLES
     MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
+    #endif
     GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
     GL::Renderer::setClearColor(m_BkgColor);
+    #ifndef CORRADE_TARGET_EMSCRIPTEN
     setSwapInterval(1);
+    #endif
 
     /* Setup scene objects and camera */
     m_Grid.emplace(&m_Scene, &m_Drawables);
@@ -61,11 +65,13 @@ void GLApplication::viewportEvent(ViewportEvent& event) {
 /****************************************************************************************************/
 void GLApplication::keyPressEvent(KeyEvent& event) {
     switch(event.key()) {
-        case  KeyEvent::Key::V:
+        #ifndef CORRADE_TARGET_EMSCRIPTEN
+        case KeyEvent::Key::V:
             m_bVsync ^= true;
             setSwapInterval(m_bVsync);
             event.setAccepted(true);
             break;
+        #endif
         case KeyEvent::Key::S:
             if(m_Camera->lagging() > 0.0f) {
                 Debug{} << "Disable camera smooth navigation";
@@ -80,6 +86,8 @@ void GLApplication::keyPressEvent(KeyEvent& event) {
             break;
         case KeyEvent::Key::Esc:
             exit(0);
+
+        default: ; /* So the compiler doesn't warn about 106 unhandled values */
     }
 }
 
