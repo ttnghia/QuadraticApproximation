@@ -86,6 +86,8 @@ void GLApplication::keyPressEvent(KeyEvent& event) {
             break;
         case KeyEvent::Key::Esc:
             exit(0);
+
+        default: ; /* So the compiler doesn't warn about 106 unhandled values */
     }
 }
 
