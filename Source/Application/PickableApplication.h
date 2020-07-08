@@ -31,7 +31,13 @@ class PickableApplication : public ImGuiApplication  {
 public:
     explicit PickableApplication(const std::string& title, const Arguments& arguments,
                                  size_t indexDataSize = 16,
-                                 const Vector2i& defaultWindowSize = Vector2i{ 1920, 1080 });
+                                 const Vector2i& defaultWindowSize =
+                                 #ifndef CORRADE_TARGET_EMSCRIPTEN
+                                 Vector2i{ 1920, 1080 }
+                                 #else
+                                 {}
+                                 #endif
+                                 );
 
 protected:
     void viewportEvent(ViewportEvent& event) override;

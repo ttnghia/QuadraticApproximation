@@ -44,7 +44,13 @@ using Scene3D  = SceneGraph::Scene<SceneGraph::MatrixTransformation3D>;
 class GLApplication : public Platform::Application {
 public:
     explicit GLApplication(const std::string& title, const Arguments& arguments,
-                           const Vector2i& defaultWindowSize = Vector2i{ 1920, 1080 });
+                           const Vector2i& defaultWindowSize =
+                           #ifndef CORRADE_TARGET_EMSCRIPTEN
+                           Vector2i{ 1920, 1080 }
+                           #else
+                           {}
+                           #endif
+                           );
     virtual ~GLApplication() {}
 
 protected:
